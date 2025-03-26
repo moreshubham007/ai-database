@@ -3,260 +3,357 @@
 {% block title %}Dashboard - Company Database{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <!-- Dashboard Header -->
-    <div class="row">
-        <div class="col s12">
-            <div class="card gradient-card">
-                <div class="card-content white-text">
-                    <div class="row mb-0">
-                        <div class="col s12 m6">
-                            <h4><i class="material-icons left">dashboard</i> Company Dashboard</h4>
-                            <p>Manage and analyze your company database</p>
-                        </div>
-                        <div class="col s12 m6 right-align">
-                            <div class="dashboard-stats">
-                                <div class="stat-item">
-                                    <span class="stat-value">{{ total_companies }}</span>
-                                    <span class="stat-label">Total Companies</span>
-                                </div>
-                                {% if search_query %}
-                                <div class="stat-item">
-                                    <span class="stat-value">{{ companies|length }}</span>
-                                    <span class="stat-label">Matching Results</span>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
+<!-- Add a hidden container to store all prompt options for JS to use -->
+<div data-all-prompts style="display: none;">
+    <select>
+        <option value="" disabled>Choose a prompt</option>
+        {% for prompt in ai_prompts %}
+        <option value="{{ prompt._id }}" data-target="{{ prompt.target_field }}">{{ prompt.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <div class="row mb-0">
+                    <div class="col s12 m6">
+                        <h4 class="card-title">Company Dashboard</h4>
+                    </div>
+                    <div class="col s12 m6 right-align">
+                        <a href="{{ url_for('add_company') }}" class="btn waves-effect waves-light">
+                            <i class="material-icons left">add</i> Add Company
+                        </a>
+                        <a href="{{ url_for('upload_companies') }}" class="btn waves-effect waves-light green lighten-1">
+                            <i class="material-icons left">file_upload</i> Upload CSV
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Search and Filter Section -->
-    <div class="row">
-        <div class="col s12">
-            <div class="card">
-                <div class="card-content">
-                    <span class="card-title">
-                        <i class="material-icons left">search</i>Search Companies
-                    </span>
-                    
-                    <form method="GET" action="{{ url_for('dashboard') }}">
-                        <div class="row mb-0">
-                            <div class="input-field col s12 m6">
-                                <i class="material-icons prefix">search</i>
-                                <input id="search" type="text" name="search" value="{{ search_query }}" class="validate">
-                                <label for="search" {% if search_query %}class="active"{% endif %}>Search Query</label>
-                            </div>
-                            <div class="input-field col s12 m3">
-                                <select name="field" id="field">
-                                    <option value="all" {% if search_field == 'all' %}selected{% endif %}>All Fields</option>
-                                    <option value="name" {% if search_field == 'name' %}selected{% endif %}>Name</option>
-                                    <option value="website" {% if search_field == 'website' %}selected{% endif %}>Website</option>
-                                    <option value="products" {% if search_field == 'products' %}selected{% endif %}>Products</option>
-                                    <option value="services" {% if search_field == 'services' %}selected{% endif %}>Services</option>
-                                    <option value="location" {% if search_field == 'location' %}selected{% endif %}>Location</option>
-                                    <option value="keyword" {% if search_field == 'keyword' %}selected{% endif %}>Keyword</option>
-                                </select>
-                                <label>Search In</label>
-                            </div>
-                            <div class="input-field col s12 m3">
-                                <select name="per_page" id="per_page" onchange="this.form.submit()">
-                                    <option value="10" {% if per_page == 10 %}selected{% endif %}>10 per page</option>
-                                    <option value="25" {% if per_page == 25 %}selected{% endif %}>25 per page</option>
-                                    <option value="50" {% if per_page == 50 %}selected{% endif %}>50 per page</option>
-                                    <option value="100" {% if per_page == 100 %}selected{% endif %}>100 per page</option>
-                                    <option value="all" {% if per_page == "all" %}selected{% endif %}>Show All</option>
-                                </select>
-                                <label>Items Per Page</label>
-                            </div>
+        
+        <div class="card">
+            <div class="card-content">
+                <!-- Advanced Search Form -->
+                <form method="GET" action="{{ url_for('dashboard') }}">
+                    <div class="row">
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">search</i>
+                            <input id="search" name="search" type="text" class="validate" value="{{ search_query }}">
+                            <label for="search" {% if search_query %}class="active"{% endif %}>Search Companies</label>
                         </div>
-                        <div class="row">
-                            <div class="col s12">
-                                <button class="btn waves-effect waves-light" type="submit">
-                                    <i class="material-icons left">search</i> Search
-                                </button>
-                                {% if search_query %}
-                                    <a href="{{ url_for('dashboard', per_page=per_page) }}" class="btn waves-effect waves-light red lighten-1">
-                                        <i class="material-icons left">clear</i> Clear
+                        <div class="input-field col s12 m3">
+                            <select name="field" id="field">
+                                <option value="all" {% if search_field == 'all' %}selected{% endif %}>All Fields</option>
+                                <option value="name" {% if search_field == 'name' %}selected{% endif %}>Name</option>
+                                <option value="website" {% if search_field == 'website' %}selected{% endif %}>Website</option>
+                                <option value="products" {% if search_field == 'products' %}selected{% endif %}>Products</option>
+                                <option value="services" {% if search_field == 'services' %}selected{% endif %}>Services</option>
+                                <option value="location" {% if search_field == 'location' %}selected{% endif %}>Location</option>
+                                <option value="keyword" {% if search_field == 'keyword' %}selected{% endif %}>Keyword</option>
+                            </select>
+                            <label>Search In</label>
+                        </div>
+                        <div class="input-field col s12 m3">
+                            <select name="per_page" id="per_page" onchange="this.form.submit()">
+                                <option value="10" {% if per_page == 10 %}selected{% endif %}>10 per page</option>
+                                <option value="25" {% if per_page == 25 %}selected{% endif %}>25 per page</option>
+                                <option value="50" {% if per_page == 50 %}selected{% endif %}>50 per page</option>
+                                <option value="100" {% if per_page == 100 %}selected{% endif %}>100 per page</option>
+                                <option value="250" {% if per_page == 250 %}selected{% endif %}>250 per page</option>
+                                <option value="500" {% if per_page == 500 %}selected{% endif %}>500 per page</option>
+                                <option value="1000" {% if per_page == 1000 %}selected{% endif %}>1000 per page</option>
+                                <option value="all" {% if per_page == "all" %}selected{% endif %}>Show All</option>
+                            </select>
+                            <label>Items Per Page</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <button class="btn waves-effect waves-light" type="submit">
+                                <i class="material-icons left">search</i> Search
+                            </button>
+                            {% if search_query %}
+                                <a href="{{ url_for('dashboard', per_page=per_page) }}" class="btn waves-effect waves-light red lighten-1">
+                                    <i class="material-icons left">clear</i> Clear
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Add this right after the search form, before the companies table -->
+                <div id="bulk-actions-toolbar" class="card-panel blue-grey lighten-5" style="display: none; margin-top: 10px;">
+                    <div class="row valign-wrapper mb-0">
+                        <div class="col s6">
+                            <span id="selected-count" class="flow-text">0 companies selected</span>
+                        </div>
+                        <div class="col s6 right-align">
+                            <div class="dropdown-trigger btn" data-target="bulk-actions-dropdown">
+                                <i class="material-icons left">build</i>Bulk Actions<i class="material-icons right">arrow_drop_down</i>
+                            </div>
+                            <ul id="bulk-actions-dropdown" class="dropdown-content">
+                                <li><a href="#bulk-ai-update-modal" class="modal-trigger"><i class="material-icons left">update</i>Update with AI</a></li>
+                                <li><a href="#bulk-delete-modal" class="modal-trigger"><i class="material-icons left">delete</i>Delete</a></li>
+                                <li><a href="#!" id="download-selected-csv"><i class="material-icons left">file_download</i>Download CSV</a></li>
+                                <li class="divider"></li>
+                                <li><a href="#" id="bulk-select-all"><i class="material-icons left">select_all</i>Select All</a></li>
+                                <li><a href="#" id="bulk-deselect-all"><i class="material-icons left">clear_all</i>Deselect All</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results Summary -->
+                <div class="row">
+                    <div class="col s12">
+                        <div class="chip">
+                            <i class="material-icons left">info</i>
+                            Showing {{ companies|length }} of {{ total_companies }} companies
+                            {% if search_query %}
+                                matching "{{ search_query }}" in {{ "all fields" if search_field == "all" else search_field }}
+                            {% endif %}
+                            ({{ per_page }} per page)
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Companies Table -->
+                <div class="responsive-table">
+                    <table class="striped highlight">
+                        <thead>
+                            <tr>
+                                <th width="40">
+                                    <label>
+                                        <input type="checkbox" id="select-all-checkbox" class="filled-in" />
+                                        <span></span>
+                                    </label>
+                                </th>
+                                <th>Name</th>
+                                <th>Website</th>
+                                <th>LinkedIn</th>
+                                <th>Products</th>
+                                <th>Services</th>
+                                <th>Location</th>
+                                <th>Keyword</th>
+                                <th class="center-align">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for company in companies %}
+                            <tr>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" class="filled-in company-checkbox" data-id="{{ company._id }}" />
+                                        <span></span>
+                                    </label>
+                                </td>
+                                <td>{{ company.name }}</td>
+                                <td>
+                                    {% if company.website %}
+                                        <a href="{{ company.website }}" target="_blank" class="truncate">{{ company.website }}</a>
+                                    {% else %}
+                                        <span class="grey-text">Not specified</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if company.linkedin_url %}
+                                        <a href="{{ company.linkedin_url }}" target="_blank" class="truncate">
+                                            <i class="material-icons left">link</i>LinkedIn
+                                        </a>
+                                    {% else %}
+                                        <span class="grey-text">Not specified</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ company.products or 'Not specified' }}</td>
+                                <td>{{ company.services or 'Not specified' }}</td>
+                                <td>{{ company.location or 'Not specified' }}</td>
+                                <td>{{ company.keyword or 'Not specified' }}</td>
+                                <td class="center-align">
+                                    <a href="#" class="btn-small waves-effect waves-light blue update-company-ai" 
+                                       data-id="{{ company._id }}" 
+                                       data-website="{{ company.website }}"
+                                       data-name="{{ company.name }}">
+                                       <i class="material-icons left">cloud_upload</i>AI Update
+                                    </a>
+                                    <a href="{{ url_for('edit_company', company_id=company._id) }}" class="btn-small waves-effect waves-light blue tooltipped" data-position="top" data-tooltip="Edit">
+                                        <i class="material-icons">edit</i>
+                                    </a>
+                                    
+                                    <!-- Replace the existing AI update button with a dropdown trigger -->
+                                    <!-- <a class='dropdown-trigger btn-small waves-effect waves-light green tooltipped' href='#' data-target='ai-actions-{{ company._id }}' data-position="top" data-tooltip="AI Updates">
+                                        <i class="material-icons">smart_toy</i>
+                                    </a>
+                                     -->
+                                    <!-- AI field update dropdown -->
+                                    <ul id='ai-actions-{{ company._id }}' class='dropdown-content'>
+                                        <li><a href="#ai-update-modal" class="modal-trigger ai-field-update" 
+                                               data-id="{{ company._id }}"
+                                               data-name="{{ company.name }}"
+                                               data-website="{{ company.website }}"
+                                               data-field="name">Update Name</a></li>
+                                        <li><a href="#ai-update-modal" class="modal-trigger ai-field-update" 
+                                               data-id="{{ company._id }}"
+                                               data-name="{{ company.name }}"
+                                               data-website="{{ company.website }}"
+                                               data-field="products">Update Products</a></li>
+                                        <li><a href="#ai-update-modal" class="modal-trigger ai-field-update" 
+                                               data-id="{{ company._id }}"
+                                               data-name="{{ company.name }}"
+                                               data-website="{{ company.website }}"
+                                               data-field="services">Update Services</a></li>
+                                        <li><a href="#ai-update-modal" class="modal-trigger ai-field-update" 
+                                               data-id="{{ company._id }}"
+                                               data-name="{{ company.name }}"
+                                               data-website="{{ company.website }}"
+                                               data-field="location">Update Location</a></li>
+                                        <li><a href="#ai-update-modal" class="modal-trigger ai-field-update" 
+                                               data-id="{{ company._id }}"
+                                               data-name="{{ company.name }}"
+                                               data-website="{{ company.website }}"
+                                               data-field="keyword">Update Keywords</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="#ai-update-modal" class="modal-trigger ai-update-btn" 
+                                               data-id="{{ company._id }}"
+                                               data-name="{{ company.name }}"
+                                               data-website="{{ company.website }}">Update All Fields</a></li>
+                                    </ul>
+                                    
+                                    <a href="#delete-modal-{{ company._id }}" class="btn-small waves-effect waves-light red lighten-1 modal-trigger tooltipped" data-position="top" data-tooltip="Delete">
+                                        <i class="material-icons">delete</i>
+                                    </a>
+                                    
+                                    <!-- Delete Confirmation Modal -->
+                                    <div id="delete-modal-{{ company._id }}" class="modal">
+                                        <div class="modal-content">
+                                            <h4>Confirm Delete</h4>
+                                            <p>Are you sure you want to delete <strong>{{ company.name }}</strong>?</p>
+                                            <p class="red-text">This action cannot be undone.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="#!" class="modal-close btn-flat">Cancel</a>
+                                            <a href="{{ url_for('delete_company', company_id=company._id) }}" class="modal-close btn waves-effect waves-light red lighten-1">
+                                                <i class="material-icons left">delete</i> Delete
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="center-align">
+                                    <div class="section">
+                                        <i class="material-icons medium grey-text">search</i>
+                                        <p class="flow-text grey-text">
+                                            {% if search_query %}
+                                                No companies found matching your search criteria.
+                                            {% else %}
+                                                No companies found. Add a company to get started.
+                                            {% endif %}
+                                        </p>
+                                        {% if not search_query %}
+                                            <a href="{{ url_for('add_company') }}" class="btn waves-effect waves-light">
+                                                <i class="material-icons left">add</i> Add Company
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <div class="row">
+                    <div class="col s12">
+                        <ul class="pagination center">
+                            <!-- First Page -->
+                            <li class="{{ 'disabled' if current_page == 1 else 'waves-effect' }}">
+                                {% if current_page == 1 %}
+                                    <a href="#!"><i class="material-icons">first_page</i></a>
+                                {% else %}
+                                    <a href="{{ url_for('dashboard', page=1, search=search_query, field=search_field, per_page=per_page) }}">
+                                        <i class="material-icons">first_page</i>
                                     </a>
                                 {% endif %}
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Bulk Actions Toolbar -->
-    <div id="bulk-actions-toolbar" class="card-panel blue-grey lighten-5" style="display: none; margin-top: 10px;">
-        <div class="row valign-wrapper mb-0">
-            <div class="col s6">
-                <span id="selected-count" class="flow-text">0 companies selected</span>
-            </div>
-            <div class="col s6 right-align">
-                <div class="dropdown-trigger btn" data-target="bulk-actions-dropdown">
-                    <i class="material-icons left">build</i>Bulk Actions<i class="material-icons right">arrow_drop_down</i>
-                </div>
-                <ul id="bulk-actions-dropdown" class="dropdown-content">
-                    <li><a href="#bulk-ai-update-modal" class="modal-trigger"><i class="material-icons left">update</i>Update with AI</a></li>
-                    <li><a href="#bulk-delete-modal" class="modal-trigger"><i class="material-icons left">delete</i>Delete</a></li>
-                    <li><a href="#!" id="download-selected-csv"><i class="material-icons left">file_download</i>Download CSV</a></li>
-                    <li class="divider"></li>
-                    <li><a href="#" id="bulk-select-all"><i class="material-icons left">select_all</i>Select All</a></li>
-                    <li><a href="#" id="bulk-deselect-all"><i class="material-icons left">clear_all</i>Deselect All</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Results Summary -->
-    <div class="row">
-        <div class="col s12">
-            <div class="chip">
-                <i class="material-icons left">info</i>
-                Showing {{ companies|length }} of {{ total_companies }} companies
-                {% if search_query %}
-                    matching "{{ search_query }}" in {{ "all fields" if search_field == "all" else search_field }}
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Companies Table -->
-    <div class="row">
-        <div class="col s12">
-            <div class="card">
-                <div class="card-content">
-                    <span class="card-title">
-                        <i class="material-icons left">business</i>Companies
-                    </span>
-                    
-                    <div class="responsive-table">
-                        <table class="striped highlight">
-                            <thead>
-                                <tr>
-                                    <th width="40">
-                                        <label>
-                                            <input type="checkbox" id="select-all-checkbox" class="filled-in" />
-                                            <span></span>
-                                        </label>
-                                    </th>
-                                    <th>Name</th>
-                                    <th>Website</th>
-                                    <th>LinkedIn</th>
-                                    <th>Products</th>
-                                    <th>Services</th>
-                                    <th>Location</th>
-                                    <th>Keyword</th>
-                                    <th class="center-align">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for company in companies %}
-                                <tr>
-                                    <td>
-                                        <label>
-                                            <input type="checkbox" class="filled-in company-checkbox" data-id="{{ company._id }}" />
-                                            <span></span>
-                                        </label>
-                                    </td>
-                                    <td>{{ company.name }}</td>
-                                    <td>
-                                        {% if company.website %}
-                                            <a href="{{ company.website }}" target="_blank" class="truncate">
-                                                <i class="material-icons left">language</i>Website
-                                            </a>
-                                        {% else %}
-                                            <span class="grey-text">Not specified</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if company.linkedin_url %}
-                                            <a href="{{ company.linkedin_url }}" target="_blank" class="truncate">
-                                                <i class="material-icons left">link</i>LinkedIn
-                                            </a>
-                                        {% else %}
-                                            <span class="grey-text">Not specified</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ company.products or 'Not specified' }}</td>
-                                    <td>{{ company.services or 'Not specified' }}</td>
-                                    <td>{{ company.location or 'Not specified' }}</td>
-                                    <td>{{ company.keyword or 'Not specified' }}</td>
-                                    <td class="center-align">
-                                        <div class="action-buttons">
-                                            <a href="#company-detail-modal" class="btn-floating btn-small waves-effect waves-light blue tooltipped modal-trigger view-company" 
-                                               data-id="{{ company._id }}" data-position="top" data-tooltip="View Details">
-                                                <i class="material-icons">visibility</i>
-                                            </a>
-                                            <a href="#ai-update-modal" class="btn-floating btn-small waves-effect waves-light green tooltipped modal-trigger update-company" 
-                                               data-id="{{ company._id }}" data-name="{{ company.name }}" data-website="{{ company.website }}" 
-                                               data-position="top" data-tooltip="Update with AI">
-                                                <i class="material-icons">update</i>
-                                            </a>
-                                            <a href="{{ url_for('edit_company', company_id=company._id) }}" class="btn-floating btn-small waves-effect waves-light orange tooltipped" 
-                                               data-position="top" data-tooltip="Edit">
-                                                <i class="material-icons">edit</i>
-                                            </a>
-                                            <a href="{{ url_for('delete_company', company_id=company._id) }}" class="btn-floating btn-small waves-effect waves-light red tooltipped" 
-                                               data-position="top" data-tooltip="Delete" onclick="return confirm('Are you sure you want to delete this company?');">
-                                                <i class="material-icons">delete</i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="9" class="center-align">
-                                        <div class="empty-state">
-                                            <i class="material-icons large">search_off</i>
-                                            <p>No companies found{% if search_query %} matching your search criteria{% endif %}.</p>
-                                            <a href="{{ url_for('add_company') }}" class="btn waves-effect waves-light">
-                                                <i class="material-icons left">add_business</i>Add Company
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    {% if total_pages > 1 %}
-                    <div class="pagination-container center-align">
-                        <ul class="pagination">
-                            <li class="{{ 'disabled' if current_page == 1 else 'waves-effect' }}">
-                                <a href="{{ url_for('dashboard', page=current_page-1, search=search_query, field=search_field, per_page=per_page) if current_page > 1 else '#' }}">
-                                    <i class="material-icons">chevron_left</i>
-                                </a>
                             </li>
                             
-                            {% for page in range(1, total_pages + 1) %}
-                                {% if page == current_page %}
-                                    <li class="active"><a href="#">{{ page }}</a></li>
+                            <!-- Previous Page -->
+                            <li class="{{ 'disabled' if current_page == 1 else 'waves-effect' }}">
+                                {% if current_page == 1 %}
+                                    <a href="#!"><i class="material-icons">chevron_left</i></a>
                                 {% else %}
-                                    <li class="waves-effect">
-                                        <a href="{{ url_for('dashboard', page=page, search=search_query, field=search_field, per_page=per_page) }}">
-                                            {{ page }}
-                                        </a>
-                                    </li>
+                                    <a href="{{ url_for('dashboard', page=current_page-1, search=search_query, field=search_field, per_page=per_page) }}">
+                                        <i class="material-icons">chevron_left</i>
+                                    </a>
                                 {% endif %}
+                            </li>
+                            
+                            <!-- Page Numbers -->
+                            {% set start_page = [current_page - 2, 1]|max %}
+                            {% set end_page = [start_page + 4, total_pages]|min %}
+                            {% set start_page = [end_page - 4, 1]|max %}
+                            
+                            {% for page_num in range(start_page, end_page + 1) %}
+                                <li class="{{ 'active' if page_num == current_page else 'waves-effect' }}">
+                                    <a href="{{ url_for('dashboard', page=page_num, search=search_query, field=search_field, per_page=per_page) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
                             {% endfor %}
                             
+                            <!-- Next Page -->
                             <li class="{{ 'disabled' if current_page == total_pages else 'waves-effect' }}">
-                                <a href="{{ url_for('dashboard', page=current_page+1, search=search_query, field=search_field, per_page=per_page) if current_page < total_pages else '#' }}">
-                                    <i class="material-icons">chevron_right</i>
-                                </a>
+                                {% if current_page == total_pages %}
+                                    <a href="#!"><i class="material-icons">chevron_right</i></a>
+                                {% else %}
+                                    <a href="{{ url_for('dashboard', page=current_page+1, search=search_query, field=search_field, per_page=per_page) }}">
+                                        <i class="material-icons">chevron_right</i>
+                                    </a>
+                                {% endif %}
+                            </li>
+                            
+                            <!-- Last Page -->
+                            <li class="{{ 'disabled' if current_page == total_pages else 'waves-effect' }}">
+                                {% if current_page == total_pages %}
+                                    <a href="#!"><i class="material-icons">last_page</i></a>
+                                {% else %}
+                                    <a href="{{ url_for('dashboard', page=total_pages, search=search_query, field=search_field, per_page=per_page) }}">
+                                        <i class="material-icons">last_page</i>
+                                    </a>
+                                {% endif %}
                             </li>
                         </ul>
+                        
+                        <!-- Page Jump Form -->
+                        <div class="center-align" style="margin-top: 10px;">
+                            <form method="GET" action="{{ url_for('dashboard') }}" class="inline-form">
+                                <div class="row valign-wrapper" style="max-width: 400px; margin: 0 auto;">
+                                    <input type="hidden" name="search" value="{{ search_query }}">
+                                    <input type="hidden" name="field" value="{{ search_field }}">
+                                    <input type="hidden" name="per_page" value="{{ per_page }}">
+                                    
+                                    <div class="input-field col s6 offset-s2" style="margin: 0;">
+                                        <input id="jump-to-page" name="page" type="number" min="1" max="{{ total_pages }}" class="validate center-align" style="width: 80px; margin: 0 auto;">
+                                        <label for="jump-to-page">Page</label>
+                                    </div>
+                                    <div class="col s4">
+                                        <button class="btn waves-effect waves-light" type="submit" style="margin-top: 10px;">
+                                            Go
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="center-align grey-text" style="margin-top: 5px;">
+                                    (of {{ total_pages }} pages)
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    {% endif %}
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -423,117 +520,558 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize tooltips with a slightly longer delay
-        var tooltipElems = document.querySelectorAll('.tooltipped');
-        var tooltipInstances = M.Tooltip.init(tooltipElems, {
-            enterDelay: 200,
-            exitDelay: 100
+        console.log("Dashboard page loaded");
+        
+        // Initialize all modals
+        var modals = document.querySelectorAll('.modal');
+        M.Modal.init(modals);
+        console.log("Initialized", modals.length, "modals");
+        
+        // Initialize all select dropdowns
+        var selects = document.querySelectorAll('select');
+        M.FormSelect.init(selects);
+        console.log("Initialized", selects.length, "select dropdowns");
+        
+        // Initialize all tooltips
+        var tooltips = document.querySelectorAll('.tooltipped');
+        M.Tooltip.init(tooltips);
+        
+        // Initialize dropdowns
+        var dropdowns = document.querySelectorAll('.dropdown-trigger');
+        M.Dropdown.init(dropdowns, {
+            coverTrigger: false,
+            constrainWidth: false
+        });
+        console.log("Initialized", dropdowns.length, "dropdowns");
+        
+        // Bulk operations variables
+        const bulkActionsToolbar = document.getElementById('bulk-actions-toolbar');
+        const selectedCountElement = document.getElementById('selected-count');
+        const selectAllCheckbox = document.getElementById('select-all-checkbox');
+        const companyCheckboxes = document.querySelectorAll('.company-checkbox');
+        
+        console.log("Found", companyCheckboxes.length, "company checkboxes");
+        
+        // Function to update the selected count and toolbar visibility
+        function updateSelectedCount() {
+            const selectedCheckboxes = document.querySelectorAll('.company-checkbox:checked');
+            const count = selectedCheckboxes.length;
+            
+            console.log("Selection changed:", count, "companies selected");
+            
+            selectedCountElement.textContent = count === 1 
+                ? '1 company selected' 
+                : `${count} companies selected`;
+            
+            bulkActionsToolbar.style.display = count > 0 ? 'block' : 'none';
+            
+            // Update the state of the select-all checkbox
+            if (count === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (count === companyCheckboxes.length) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+            }
+            
+            // Also update the delete confirmation text
+            const bulkDeleteCount = document.getElementById('bulk-delete-count');
+            if (bulkDeleteCount) {
+                bulkDeleteCount.textContent = 
+                    `You are about to delete ${count} ${count === 1 ? 'company' : 'companies'}.`;
+            }
+        }
+        
+        // Add event listeners to checkboxes
+        companyCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedCount);
         });
         
-        // Add hover effect to table rows
-        const tableRows = document.querySelectorAll('tbody tr');
-        tableRows.forEach(row => {
-            row.addEventListener('mouseenter', function() {
-                this.style.backgroundColor = '#f5f5f5';
-                this.style.transition = 'background-color 0.2s ease';
+        // Select all checkbox
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                console.log("Select all checkbox changed:", this.checked);
+                companyCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateSelectedCount();
             });
-            
-            row.addEventListener('mouseleave', function() {
-                this.style.backgroundColor = '';
-            });
-        });
+        }
         
-        // Add animation to stats
-        const statValues = document.querySelectorAll('.stat-value');
-        statValues.forEach(stat => {
-            const finalValue = parseInt(stat.textContent);
-            let currentValue = 0;
-            const duration = 1000; // 1 second
-            const increment = Math.ceil(finalValue / (duration / 20));
-            
-            const counter = setInterval(() => {
-                currentValue += increment;
-                if (currentValue >= finalValue) {
-                    clearInterval(counter);
-                    stat.textContent = finalValue;
-                } else {
-                    stat.textContent = currentValue;
+        // Bulk select/deselect all buttons
+        const bulkSelectAll = document.getElementById('bulk-select-all');
+        if (bulkSelectAll) {
+            bulkSelectAll.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log("Bulk select all clicked");
+                companyCheckboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+                updateSelectedCount();
+            });
+        }
+        
+        const bulkDeselectAll = document.getElementById('bulk-deselect-all');
+        if (bulkDeselectAll) {
+            bulkDeselectAll.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log("Bulk deselect all clicked");
+                companyCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                updateSelectedCount();
+            });
+        }
+        
+        // Function to get selected company IDs
+        function getSelectedCompanyIds() {
+            return Array.from(document.querySelectorAll('.company-checkbox:checked'))
+                .map(checkbox => checkbox.getAttribute('data-id'));
+        }
+        
+        // Bulk AI Update
+        const bulkAiUpdate = document.getElementById('bulk-ai-update');
+        if (bulkAiUpdate) {
+            bulkAiUpdate.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log("Bulk AI update clicked");
+                const selectedIds = getSelectedCompanyIds();
+                console.log("Selected IDs:", selectedIds);
+                
+                if (selectedIds.length === 0) {
+                    M.toast({html: 'No companies selected!'});
+                    return;
                 }
-            }, 20);
+                
+                const modal = document.getElementById('bulk-ai-update-modal');
+                if (modal) {
+                    const instance = M.Modal.getInstance(modal);
+                    instance.open();
+                } else {
+                    console.error("Bulk AI update modal not found!");
+                }
+            });
+        }
+        
+        // Start bulk AI update process
+        const startBulkAiUpdate = document.getElementById('start-bulk-ai-update');
+        if (startBulkAiUpdate) {
+            startBulkAiUpdate.addEventListener('click', function() {
+                console.log("Start bulk AI update clicked");
+                const selectedIds = getSelectedCompanyIds();
+                if (selectedIds.length === 0) {
+                    M.toast({html: 'No companies selected!'});
+                    return;
+                }
+                
+                // Get selected fields
+                const fieldsToUpdate = document.getElementById('bulk-update-field-select').value;
+                
+                // Prepare UI for processing
+                this.disabled = true;
+                document.getElementById('bulk-update-progress').style.display = 'block';
+                document.getElementById('bulk-update-result').style.display = 'none';
+                
+                // Clear previous status list
+                const statusList = document.getElementById('bulk-update-status-list');
+                statusList.innerHTML = '';
+                document.getElementById('bulk-update-details').style.display = 'block';
+                
+                // Add each company to the status list
+                const companyRows = Array.from(document.querySelectorAll('.company-checkbox:checked'))
+                    .map(checkbox => checkbox.closest('tr'));
+                
+                selectedIds.forEach((companyId, index) => {
+                    const companyRow = companyRows[index];
+                    const companyName = companyRow.querySelector('td:nth-child(2)').textContent.trim();
+                    const companyWebsite = companyRow.querySelector('td:nth-child(3)').textContent.trim();
+                    
+                    const listItem = document.createElement('li');
+                    listItem.className = 'collection-item';
+                    listItem.setAttribute('data-id', companyId);
+                    listItem.innerHTML = `
+                        <div>
+                            <strong>${companyName || 'Unnamed Company'}</strong>
+                            <br>
+                            <small>${companyWebsite}</small>
+                            <span class="secondary-content">
+                                <span class="status blue-text">Pending</span>
+                            </span>
+                        </div>
+                    `;
+                    statusList.appendChild(listItem);
+                });
+                
+                // Process companies one by one
+                let completed = 0;
+                let successful = 0;
+                
+                function processNextCompany(index) {
+                    if (index >= selectedIds.length) {
+                        // All companies processed
+                        document.getElementById('bulk-update-progress').style.display = 'none';
+                        const resultElement = document.getElementById('bulk-update-result');
+                        resultElement.style.display = 'block';
+                        resultElement.className = 'card-panel green lighten-4';
+                        resultElement.innerHTML = `
+                            <i class="material-icons left">check_circle</i>
+                            <strong>Completed!</strong> Successfully updated ${successful} out of ${selectedIds.length} companies.
+                        `;
+                        document.getElementById('start-bulk-ai-update').disabled = false;
+                        
+                        // Add a button to reload the page
+                        const reloadButton = document.createElement('a');
+                        reloadButton.className = 'btn waves-effect waves-light blue right';
+                        reloadButton.innerHTML = '<i class="material-icons left">refresh</i>Reload Page';
+                        reloadButton.addEventListener('click', () => window.location.reload());
+                        resultElement.appendChild(reloadButton);
+                        
+                        return;
+                    }
+                    
+                    const companyId = selectedIds[index];
+                    const statusElement = document.querySelector(`.collection-item[data-id="${companyId}"] .status`);
+                    statusElement.textContent = 'Processing...';
+                    statusElement.className = 'status orange-text';
+                    
+                    // Get the company website from the table row
+                    const companyRow = companyRows[index];
+                    const website = companyRow.querySelector('td:nth-child(3)').textContent.trim();
+                    
+                    console.log(`Processing company ${index+1}/${selectedIds.length}: ID=${companyId}, website=${website}`);
+                    
+                    // Call the API to update the company
+                    fetch('/api/company/update_from_web', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            company_id: companyId,
+                            website: website,
+                            fields: fieldsToUpdate
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("API response data:", data);
+                        
+                        // Hide progress indicator
+                        document.getElementById('bulk-update-progress').style.display = 'none';
+                        
+                        // Show result message
+                        const resultElement = document.getElementById('bulk-update-result');
+                        resultElement.style.display = 'block';
+                        
+                        if (data.success) {
+                            successful++;
+                            statusElement.textContent = 'Success';
+                            statusElement.className = 'status green-text';
+                        } else {
+                            statusElement.textContent = 'Failed';
+                            statusElement.className = 'status red-text';
+                            
+                            // Add error message as a tooltip
+                            const statusContainer = statusElement.parentElement.parentElement;
+                            const errorIcon = document.createElement('i');
+                            errorIcon.className = 'material-icons tiny tooltipped';
+                            errorIcon.setAttribute('data-position', 'left');
+                            errorIcon.setAttribute('data-tooltip', data.message);
+                            errorIcon.textContent = 'error';
+                            statusContainer.appendChild(errorIcon);
+                            M.Tooltip.init(errorIcon);
+                        }
+                        
+                        // Process the next company
+                        processNextCompany(index + 1);
+                    })
+                    .catch(error => {
+                        console.error(`Error updating company ${companyId}:`, error);
+                        completed++;
+                        statusElement.textContent = 'Error';
+                        statusElement.className = 'status red-text';
+                        processNextCompany(index + 1);
+                    });
+                }
+                
+                // Start processing the first company
+                processNextCompany(0);
+            });
+        }
+        
+        // Bulk Delete
+        const bulkDelete = document.getElementById('bulk-delete');
+        if (bulkDelete) {
+            bulkDelete.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log("Bulk delete clicked");
+                const selectedIds = getSelectedCompanyIds();
+                console.log("Selected IDs for delete:", selectedIds);
+                
+                if (selectedIds.length === 0) {
+                    M.toast({html: 'No companies selected!'});
+                    return;
+                }
+                
+                const modal = document.getElementById('bulk-delete-modal');
+                if (modal) {
+                    const instance = M.Modal.getInstance(modal);
+                    instance.open();
+                } else {
+                    console.error("Bulk delete modal not found!");
+                }
+            });
+        }
+        
+        // Confirm bulk delete
+        const confirmBulkDelete = document.getElementById('confirm-bulk-delete');
+        if (confirmBulkDelete) {
+            confirmBulkDelete.addEventListener('click', function() {
+                console.log("Confirm bulk delete clicked");
+                const selectedIds = getSelectedCompanyIds();
+                
+                // Disable the button to prevent multiple clicks
+                this.disabled = true;
+                
+                // Send the request to delete the companies
+                fetch('/company/bulk_delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        company_ids: selectedIds
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Bulk delete response:", data);
+                    if (data.success) {
+                        M.toast({html: data.message});
+                        // Reload the page after a delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        M.toast({html: 'Error: ' + data.message});
+                        this.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    M.toast({html: 'An error occurred while deleting companies'});
+                    this.disabled = false;
+                });
+            });
+        }
+        
+        // Existing event listeners for other functionality...
+        // Make sure these don't conflict with the bulk operations
+        
+        // Individual company update with AI
+        document.querySelectorAll('.update-company-ai').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log("Individual AI update button clicked");
+                
+                // Get company info from data attributes
+                const companyId = this.getAttribute('data-id');
+                const companyWebsite = this.getAttribute('data-website') || '';
+                const companyName = this.getAttribute('data-name') || '';
+                
+                console.log("Company data:", {id: companyId, website: companyWebsite, name: companyName});
+                
+                // Populate the modal with company data
+                document.getElementById('company-website-input').value = companyWebsite;
+                if (companyWebsite) {
+                    document.querySelector('label[for="company-website-input"]').classList.add('active');
+                }
+                
+                // Set hidden field for company ID
+                const aiUpdateModal = document.getElementById('ai-update-modal');
+                aiUpdateModal.setAttribute('data-company-id', companyId);
+                
+                // Open the modal
+                const instance = M.Modal.getInstance(aiUpdateModal);
+                instance.open();
+            });
         });
         
-        // Keep the existing JavaScript for bulk actions, etc.
+        // Execute AI update when button is clicked
+        document.getElementById('start-ai-update').addEventListener('click', function() {
+            console.log("Start individual AI update clicked");
+            // Get the company ID from the modal
+            const modal = document.getElementById('ai-update-modal');
+            const companyId = modal.getAttribute('data-company-id');
+            
+            // Get values from form
+            const websiteUrl = document.getElementById('company-website-input').value.trim();
+            const fieldToUpdate = document.getElementById('update-field-select').value;
+            
+            if (!companyId) {
+                M.toast({html: 'No company selected for update'});
+                return;
+            }
+            
+            if (!websiteUrl) {
+                M.toast({html: 'Please enter a website URL'});
+                return;
+            }
+            
+            // Disable the button to prevent multiple clicks
+            this.disabled = true;
+            
+            // Show progress indicator
+            document.getElementById('update-progress').style.display = 'block';
+            document.getElementById('update-result').style.display = 'none';
+            
+            console.log("Updating company with AI:", {
+                company_id: companyId,
+                website: websiteUrl,
+                fields: fieldToUpdate
+            });
+            
+            // Call the API
+            fetch('/api/company/update_from_web', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    company_id: companyId,
+                    website: websiteUrl,
+                    fields: fieldToUpdate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("API response data:", data);
+                
+                // Re-enable the button
+                document.getElementById('start-ai-update').disabled = false;
+                
+                // Hide progress indicator
+                document.getElementById('update-progress').style.display = 'none';
+                document.getElementById('update-result').style.display = 'block';
+                
+                const resultElement = document.getElementById('update-result');
+                
+                if (data.success) {
+                    const successElement = resultElement.querySelector('.success-result');
+                    successElement.style.display = 'block';
+                    successElement.querySelector('.result-message').textContent = data.message;
+                    
+                    // Update the badges based on what was updated
+                    if (data.updated_fields.includes('name')) {
+                        successElement.querySelector('.name-badge').style.display = 'inline-block';
+                    }
+                    if (data.updated_fields.includes('products')) {
+                        successElement.querySelector('.products-badge').style.display = 'inline-block';
+                    }
+                    if (data.updated_fields.includes('services')) {
+                        successElement.querySelector('.services-badge').style.display = 'inline-block';
+                    }
+                    if (data.updated_fields.includes('location')) {
+                        successElement.querySelector('.location-badge').style.display = 'inline-block';
+                    }
+                    if (data.updated_fields.includes('description')) {
+                        successElement.querySelector('.description-badge').style.display = 'inline-block';
+                    }
+                    if (data.updated_fields.includes('industry')) {
+                        successElement.querySelector('.industry-badge').style.display = 'inline-block';
+                    }
+                    if (data.updated_fields.includes('keyword')) {
+                        successElement.querySelector('.keyword-badge').style.display = 'inline-block';
+                    }
+                    if (data.updated_fields.includes('linkedin_url')) {
+                        successElement.querySelector('.linkedin-badge').style.display = 'inline-block';
+                    }
+                    
+                    // Hide error element
+                    resultElement.querySelector('.error-result').style.display = 'none';
+                } else {
+                    // Show error message
+                    const errorElement = resultElement.querySelector('.error-result');
+                    errorElement.style.display = 'block';
+                    errorElement.querySelector('.result-message').textContent = data.message;
+                    
+                    // Hide success element
+                    resultElement.querySelector('.success-result').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // Hide progress and show error
+                document.getElementById('update-progress').style.display = 'none';
+                const resultElement = document.getElementById('update-result');
+                resultElement.style.display = 'block';
+                resultElement.className = 'card-panel red lighten-4';
+                resultElement.innerHTML = `
+                    <i class="material-icons left">error</i>
+                    <strong>Error!</strong> Failed to update company data.
+                `;
+                
+                // Re-enable the button
+                this.disabled = false;
+            });
+        });
+
+        // Add CSV download functionality
+        document.getElementById('download-selected-csv').addEventListener('click', function() {
+            console.log('Download CSV button clicked');
+            
+            // Get all selected companies - use getSelectedCompanyIds() instead of getSelectedCompanies()
+            const selectedCompanies = getSelectedCompanyIds();
+            console.log('Selected companies:', selectedCompanies);
+            
+            if (selectedCompanies.length === 0) {
+                M.toast({html: 'Please select at least one company to download'});
+                return;
+            }
+            
+            // Show loading toast
+            M.toast({html: `Preparing CSV download for ${selectedCompanies.length} companies...`});
+            
+            // Make the API call to download CSV
+            fetch('/api/companies/download-csv', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    company_ids: selectedCompanies
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Create a download link and trigger it
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `company-data-${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                M.toast({html: 'Download complete!'});
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                M.toast({html: 'Error generating CSV file'});
+            });
+        });
     });
 </script>
-{% endblock %}
-
-{% block styles %}
-<style>
-    .dashboard-container {
-        padding-top: 20px;
-    }
-    
-    .gradient-card {
-        background: linear-gradient(45deg, #1976d2, #64b5f6);
-        border-radius: 8px;
-    }
-    
-    .dashboard-stats {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 10px;
-    }
-    
-    .stat-item {
-        text-align: center;
-        margin-left: 20px;
-        background: rgba(255, 255, 255, 0.2);
-        padding: 10px 15px;
-        border-radius: 8px;
-    }
-    
-    .stat-value {
-        display: block;
-        font-size: 24px;
-        font-weight: bold;
-    }
-    
-    .stat-label {
-        font-size: 12px;
-        opacity: 0.8;
-    }
-    
-    .action-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 5px;
-    }
-    
-    .empty-state {
-        padding: 40px 0;
-        text-align: center;
-        color: #9e9e9e;
-    }
-    
-    .empty-state i {
-        font-size: 48px;
-        margin-bottom: 10px;
-    }
-    
-    .pagination-container {
-        margin-top: 20px;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 600px) {
-        .dashboard-stats {
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .action-buttons {
-            flex-wrap: wrap;
-        }
-    }
-</style>
 {% endblock %} 
