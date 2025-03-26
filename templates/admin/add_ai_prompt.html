@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Add AI Prompt - Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <div class="row mb-0">
+                    <div class="col s12">
+                        <h4 class="card-title">Add New AI Prompt</h4>
+                        <p class="grey-text">Create a new prompt for AI-assisted data extraction</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <form method="POST" action="{{ url_for('admin_add_ai_prompt') }}">
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <input id="name" name="name" type="text" class="validate" required>
+                            <label for="name">Prompt Name</label>
+                            <span class="helper-text">A short name to identify this prompt (e.g., "Company Name")</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <textarea id="value" name="value" class="materialize-textarea" required></textarea>
+                            <label for="value">Prompt Value</label>
+                            <span class="helper-text">The actual prompt text to send to the AI</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <textarea id="description" name="description" class="materialize-textarea"></textarea>
+                            <label for="description">Description (Optional)</label>
+                            <span class="helper-text">Optional description of what this prompt is used for</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <select id="target_field" name="target_field" class="validate" required>
+                                <option value="" disabled selected>Choose target field</option>
+                                <option value="general">General (Multiple Fields)</option>
+                                <option value="name">Company Name</option>
+                                <option value="products">Products</option>
+                                <option value="services">Services</option>
+                                <option value="location">Location</option>
+                                <option value="description">Description</option>
+                                <option value="industry">Industry</option>
+                                <option value="founded">Founded Year</option>
+                                <option value="employees">Number of Employees</option>
+                                <option value="revenue">Revenue</option>
+                                <option value="keyword">Keywords</option>
+                            </select>
+                            <label>Target Field</label>
+                            <span class="helper-text">Which company field this prompt is designed to update</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col s12 center-align">
+                            <button type="submit" class="waves-effect waves-light btn-large">
+                                <i class="material-icons left">save</i>Save Prompt
+                            </button>
+                            <a href="{{ url_for('admin_ai_prompts') }}" class="waves-effect waves-light btn-large grey lighten-1">
+                                <i class="material-icons left">cancel</i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Remove default values from the form
+        document.getElementById('name').value = "";
+        document.getElementById('value').value = "";
+        document.getElementById('description').value = "";
+        
+        // Initialize materialize components
+        M.textareaAutoResize(document.getElementById('value'));
+        M.textareaAutoResize(document.getElementById('description'));
+        M.updateTextFields();
+    });
+</script>
+{% endblock %} 

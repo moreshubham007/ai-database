@@ -1,0 +1,65 @@
+<!-- AI Update Modal -->
+<div id="ai-update-modal" class="modal">
+    <div class="modal-content">
+        <h4>Update Company with AI</h4>
+        <p>Use AI to update information for <span id="company-name-display" class="teal-text"></span></p>
+        
+        <div id="website-info" class="mb-2">
+            <p><strong>Website:</strong> <a id="company-website-display" href="#" target="_blank"></a></p>
+        </div>
+        
+        <div class="row">
+            <div class="input-field col s12">
+                <select id="target-field-select">
+                    <option value="all" selected>All Missing Fields</option>
+                    <option value="name">Company Name Only</option>
+                    <option value="products">Products Only</option>
+                    <option value="services">Services Only</option>
+                    <option value="location">Location Only</option>
+                    <option value="description">Description Only</option>
+                    <option value="industry">Industry Only</option>
+                    <option value="founded">Founded Year Only</option>
+                    <option value="employees">Employees Only</option>
+                    <option value="revenue">Revenue Only</option>
+                    <option value="keyword">Keywords Only</option>
+                </select>
+                <label>Field to Update</label>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="input-field col s12">
+                <select id="ai-prompt-select">
+                    <option value="" disabled selected>Choose a prompt</option>
+                    {% for prompt in ai_prompts %}
+                    <option value="{{ prompt._id }}" data-target="{{ prompt.target_field }}">{{ prompt.name }}</option>
+                    {% endfor %}
+                </select>
+                <label>Select AI Prompt</label>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="input-field col s12">
+                <select id="llm-provider-select">
+                    <option value="" disabled selected>Choose AI Provider</option>
+                    {% for provider in llm_providers %}
+                    <option value="{{ provider }}">{{ provider }}</option>
+                    {% endfor %}
+                </select>
+                <label>Select AI Provider</label>
+            </div>
+        </div>
+        
+        <div id="update-progress" class="progress" style="display:none;">
+            <div class="indeterminate"></div>
+        </div>
+        <div id="update-result" class="card-panel" style="display:none;"></div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancel</a>
+        <button id="start-ai-update" class="waves-effect waves-light btn green">
+            <i class="material-icons left">smart_toy</i> Update with AI
+        </button>
+    </div>
+</div> 

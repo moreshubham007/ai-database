@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Admin - Company Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12 m8 offset-m2 l6 offset-l3">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title center-align">Create Admin User</span>
+                <p class="center-align">This form is only available when no admin users exist in the system.</p>
+                <form method="POST">
+                    <div class="input-field">
+                        <i class="material-icons prefix">person</i>
+                        <input id="username" name="username" type="text" class="validate" required>
+                        <label for="username">Username</label>
+                    </div>
+                    <div class="input-field">
+                        <i class="material-icons prefix">email</i>
+                        <input id="email" name="email" type="email" class="validate" required>
+                        <label for="email">Email</label>
+                    </div>
+                    <div class="input-field">
+                        <i class="material-icons prefix">lock</i>
+                        <input id="password" name="password" type="password" class="validate" required minlength="6">
+                        <label for="password">Password</label>
+                    </div>
+                    <div class="center-align">
+                        <button class="btn waves-effect waves-light blue darken-3" type="submit">
+                            Create Admin <i class="material-icons right">send</i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-action center-align">
+                <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

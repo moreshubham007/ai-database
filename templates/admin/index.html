@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Panel - Company Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <h4 class="card-title">Admin Dashboard</h4>
+                <p class="grey-text">Manage users, companies, and system settings</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12 m6 l4">
+        <div class="card">
+            <div class="card-content">
+                <div class="center-align" style="padding: 20px 0;">
+                    <i class="material-icons large blue-text text-lighten-1">people</i>
+                    <h5>Users</h5>
+                    <div class="chip">
+                        <b>{{ users|length }}</b> total users
+                    </div>
+                    <p class="grey-text">Manage user accounts and permissions</p>
+                </div>
+            </div>
+            <div class="card-action center-align">
+                <a href="{{ url_for('admin_users') }}" class="btn waves-effect waves-light">
+                    <i class="material-icons left">people</i> Manage Users
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col s12 m6 l4">
+        <div class="card">
+            <div class="card-content">
+                <div class="center-align" style="padding: 20px 0;">
+                    <i class="material-icons large green-text text-lighten-1">business</i>
+                    <h5>Companies</h5>
+                    <div class="chip">
+                        <b>{{ companies_count }}</b> total companies
+                    </div>
+                    <p class="grey-text">View and manage all companies</p>
+                </div>
+            </div>
+            <div class="card-action center-align">
+                <a href="{{ url_for('dashboard') }}" class="btn waves-effect waves-light green lighten-1">
+                    <i class="material-icons left">business</i> View Companies
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col s12 m6 l4">
+        <div class="card">
+            <div class="card-content">
+                <div class="center-align" style="padding: 20px 0;">
+                    <i class="material-icons large orange-text text-lighten-1">settings</i>
+                    <h5>System</h5>
+                    <p class="grey-text">System settings and maintenance</p>
+                </div>
+            </div>
+            <div class="card-action center-align">
+                <a href="#" class="btn waves-effect waves-light orange lighten-1 disabled">
+                    <i class="material-icons left">settings</i> System Settings
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col s12 m6 l4">
+        <div class="card">
+            <div class="card-content">
+                <div class="center-align" style="padding: 20px 0;">
+                    <i class="material-icons large green-text text-lighten-1">smart_toy</i>
+                    <h5>LLM Providers</h5>
+                    <div class="chip">
+                        <b>{{ llm_connector.get_available_providers()|length }}</b> providers
+                    </div>
+                    <p class="grey-text">Configure AI language model integrations</p>
+                </div>
+            </div>
+            <div class="card-action center-align">
+                <a href="{{ url_for('admin_llm') }}" class="btn waves-effect waves-light">
+                    <i class="material-icons left">settings</i> Manage LLMs
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col s12 m6 l4">
+        <div class="card">
+            <div class="card-content">
+                <div class="center-align" style="padding: 20px 0;">
+                    <i class="material-icons large purple-text text-lighten-1">chat</i>
+                    <h5>AI Prompts</h5>
+                    <p class="grey-text">Manage prompts for AI data extraction</p>
+                </div>
+            </div>
+            <div class="card-action center-align">
+                <a href="{{ url_for('admin_ai_prompts') }}" class="btn waves-effect waves-light">
+                    <i class="material-icons left">settings</i> Manage Prompts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Recent Activity</span>
+                <div class="center-align" style="padding: 30px;">
+                    <i class="material-icons medium grey-text">history</i>
+                    <p class="grey-text">Activity logging will be implemented in a future update.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

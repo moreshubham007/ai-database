@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit AI Prompt - Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <div class="row mb-0">
+                    <div class="col s12">
+                        <h4 class="card-title">Edit AI Prompt</h4>
+                        <p class="grey-text">Update prompt for AI-assisted data extraction</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <form method="POST" action="{{ url_for('admin_edit_ai_prompt', prompt_id=prompt._id) }}">
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <input id="name" name="name" type="text" class="validate" value="{{ prompt.name }}" required>
+                            <label for="name">Prompt Name</label>
+                            <span class="helper-text">A short name to identify this prompt (e.g., "Company Name")</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <textarea id="value" name="value" class="materialize-textarea" required>{{ prompt.value }}</textarea>
+                            <label for="value">Prompt Value</label>
+                            <span class="helper-text">The actual prompt text to send to the AI</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <textarea id="description" name="description" class="materialize-textarea">{{ prompt.description }}</textarea>
+                            <label for="description">Description (Optional)</label>
+                            <span class="helper-text">Optional description of what this prompt is used for</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <select id="target_field" name="target_field" class="validate" required>
+                                <option value="" disabled>Choose target field</option>
+                                <option value="general" {% if prompt.target_field == 'general' %}selected{% endif %}>General (Multiple Fields)</option>
+                                <option value="name" {% if prompt.target_field == 'name' %}selected{% endif %}>Company Name</option>
+                                <option value="products" {% if prompt.target_field == 'products' %}selected{% endif %}>Products</option>
+                                <option value="services" {% if prompt.target_field == 'services' %}selected{% endif %}>Services</option>
+                                <option value="location" {% if prompt.target_field == 'location' %}selected{% endif %}>Location</option>
+                                <option value="description" {% if prompt.target_field == 'description' %}selected{% endif %}>Description</option>
+                                <option value="industry" {% if prompt.target_field == 'industry' %}selected{% endif %}>Industry</option>
+                                <option value="founded" {% if prompt.target_field == 'founded' %}selected{% endif %}>Founded Year</option>
+                                <option value="employees" {% if prompt.target_field == 'employees' %}selected{% endif %}>Employees</option>
+                                <option value="revenue" {% if prompt.target_field == 'revenue' %}selected{% endif %}>Revenue</option>
+                                <option value="keyword" {% if prompt.target_field == 'keyword' %}selected{% endif %}>Keywords</option>
+                            </select>
+                            <label>Target Field</label>
+                            <span class="helper-text">Which company field this prompt is designed to update</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col s12 center-align">
+                            <button type="submit" class="waves-effect waves-light btn-large">
+                                <i class="material-icons left">save</i>Update Prompt
+                            </button>
+                            <a href="{{ url_for('admin_ai_prompts') }}" class="waves-effect waves-light btn-large grey lighten-1">
+                                <i class="material-icons left">cancel</i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-resize the textareas
+        M.textareaAutoResize(document.getElementById('value'));
+        M.textareaAutoResize(document.getElementById('description'));
+        
+        // Move labels for filled inputs
+        M.updateTextFields();
+    });
+</script>
+{% endblock %} 

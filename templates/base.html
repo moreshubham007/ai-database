@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Company Database{% endblock %}</title>
+    <!-- Material UI CSS -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        :root {
+            --primary-color: #42a5f5;
+            --primary-light: #80d6ff;
+            --primary-dark: #0077c2;
+            --secondary-color: #26a69a;
+            --text-color: #424242;
+            --light-text: #757575;
+            --background-color: #f5f5f5;
+            --card-color: #ffffff;
+            --error-color: #ef5350;
+        }
+        
+        body {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        main {
+            flex: 1 0 auto;
+            padding: 20px 0;
+        }
+        
+        .container {
+            width: 90%;
+        }
+        
+        nav {
+            background-color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        nav .brand-logo {
+            padding-left: 15px;
+            font-weight: 400;
+        }
+        
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .card-panel {
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .flash-messages {
+            padding: 10px 0;
+        }
+        
+        .flash-messages .card-panel {
+            margin: 5px 0;
+            padding: 12px 20px;
+        }
+        
+        .sidenav {
+            width: 250px;
+            background-color: var(--card-color);
+        }
+        
+        .sidenav li > a {
+            color: var(--text-color);
+        }
+        
+        .btn {
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-transform: none;
+            font-weight: 500;
+        }
+        
+        .btn-small {
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .btn-floating {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .pagination li.active {
+            background-color: var(--primary-color);
+        }
+        
+        table.striped > tbody > tr:nth-child(odd) {
+            background-color: rgba(242, 242, 242, 0.5);
+        }
+        
+        .input-field input:focus + label,
+        .input-field textarea:focus + label {
+            color: var(--primary-color) !important;
+        }
+        
+        .input-field input:focus,
+        .input-field textarea:focus {
+            border-bottom: 1px solid var(--primary-color) !important;
+            box-shadow: 0 1px 0 0 var(--primary-color) !important;
+        }
+        
+        .select-wrapper input.select-dropdown:focus {
+            border-bottom: 1px solid var(--primary-color) !important;
+        }
+        
+        .dropdown-content li > a, 
+        .dropdown-content li > span {
+            color: var(--primary-color);
+        }
+        
+        [type="radio"]:checked + span:after,
+        [type="radio"].with-gap:checked + span:before,
+        [type="radio"].with-gap:checked + span:after {
+            border: 2px solid var(--primary-color);
+        }
+        
+        [type="radio"]:checked + span:after,
+        [type="radio"].with-gap:checked + span:after {
+            background-color: var(--primary-color);
+        }
+        
+        [type="checkbox"]:checked + span:not(.lever):before {
+            border-right: 2px solid var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+        
+        .page-footer {
+            background-color: var(--primary-color);
+            padding-top: 0;
+        }
+        
+        .footer-copyright {
+            background-color: rgba(0,0,0,0.05) !important;
+        }
+        
+        @media only screen and (max-width: 992px) {
+            nav .brand-logo {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+        
+        /* Custom badge styles */
+        .badge {
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+            display: inline-block;
+        }
+        
+        .badge.admin {
+            background-color: var(--primary-color);
+        }
+        
+        .badge.user {
+            background-color: var(--secondary-color);
+        }
+        
+        /* Table improvements */
+        .responsive-table {
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: var(--card-color);
+        }
+        
+        table {
+            margin-bottom: 0;
+        }
+        
+        table th {
+            font-weight: 500;
+            color: var(--light-text);
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-wrapper">
+                <a href="{{ url_for('dashboard') }}" class="brand-logo">Company DB</a>
+                <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+                <ul class="right hide-on-med-and-down">
+                    {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('add_company') }}">Add Company</a></li>
+                        <li><a href="{{ url_for('upload_companies') }}">Upload CSV</a></li>
+                        {% if current_user.role == 'admin' %}
+                            <li><a href="{{ url_for('admin_panel') }}">Admin Panel</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.role == 'admin' %}
+                            <li>
+                                <a class="dropdown-trigger" href="#!" data-target="admin-dropdown">
+                                    Admin <i class="material-icons right">arrow_drop_down</i>
+                                </a>
+                                <ul id="admin-dropdown" class="dropdown-content">
+                                    <li><a href="{{ url_for('admin_bp.admin_dashboard') }}">Dashboard</a></li>
+                                    <li><a href="{{ url_for('admin_bp.admin_users') }}">Users</a></li>
+                                    <li><a href="{{ url_for('admin_bp.admin_companies') }}">Companies</a></li>
+                                    <li><a href="{{ url_for('admin_bp.admin_bedrock') }}">AWS Bedrock</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="{{ url_for('admin_bp.admin_test') }}">Test Admin</a></li>
+                                </ul>
+                            </li>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        <li><a href="{{ url_for('register') }}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+
+        <ul class="sidenav" id="mobile-nav">
+            {% if current_user.is_authenticated %}
+                <li><div class="user-view">
+                    <div class="background blue lighten-4">
+                    </div>
+                    <a><span class="white-text name">{{ current_user.username }}</span></a>
+                    <a><span class="white-text email">{{ current_user.email }}</span></a>
+                </div></li>
+                <li><a href="{{ url_for('dashboard') }}"><i class="material-icons">dashboard</i>Dashboard</a></li>
+                <li><a href="{{ url_for('add_company') }}"><i class="material-icons">add_business</i>Add Company</a></li>
+                <li><a href="{{ url_for('upload_companies') }}"><i class="material-icons">file_upload</i>Upload CSV</a></li>
+                {% if current_user.role == 'admin' %}
+                    <li><div class="divider"></div></li>
+                    <li><a class="subheader">Admin</a></li>
+                    <li><a href="{{ url_for('admin_panel') }}"><i class="material-icons">admin_panel_settings</i>Admin Panel</a></li>
+                {% endif %}
+                <li><div class="divider"></div></li>
+                <li><a href="{{ url_for('logout') }}"><i class="material-icons">exit_to_app</i>Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}"><i class="material-icons">login</i>Login</a></li>
+                <li><a href="{{ url_for('register') }}"><i class="material-icons">person_add</i>Register</a></li>
+            {% endif %}
+        </ul>
+    </header>
+
+    <main>
+        <div class="container">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <div class="card-panel blue lighten-5">
+                                <span class="blue-text text-darken-2">
+                                    <i class="material-icons left">info</i> {{ message }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="page-footer">
+        <div class="footer-copyright">
+            <div class="container">
+                © 2023 Company Database
+                <a class="grey-text text-lighten-4 right" href="#">About</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Materialize components
+            M.Sidenav.init(document.querySelectorAll('.sidenav'));
+            M.Modal.init(document.querySelectorAll('.modal'));
+            M.FormSelect.init(document.querySelectorAll('select'));
+            M.Tooltip.init(document.querySelectorAll('.tooltipped'));
+            
+            // Initialize dropdowns
+            M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), {
+                coverTrigger: false,
+                constrainWidth: false
+            });
+            
+            // Auto-initialize all Materialize components
+            M.AutoInit();
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

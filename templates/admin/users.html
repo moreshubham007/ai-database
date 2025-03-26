@@ -1,0 +1,337 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}User Management - Admin{% endblock %}
+
+{% block admin_content %}
+<h3>User Management</h3>
+<div class="card">
+    <div class="card-content">
+        <div class="row mb-0">
+            <div class="col s12 m6">
+                <span class="card-title">All Users</span>
+            </div>
+            <div class="col s12 m6 right-align">
+                <a href="#add-user-modal" class="btn waves-effect waves-light modal-trigger">
+                    <i class="material-icons left">person_add</i> Add New User
+                </a>
+            </div>
+        </div>
+        
+        <!-- Search and filter -->
+        <div class="row">
+            <div class="input-field col s12 m6">
+                <i class="material-icons prefix">search</i>
+                <input id="user-search" type="text" class="validate">
+                <label for="user-search">Search Users</label>
+            </div>
+            <div class="input-field col s12 m6">
+                <select id="role-filter">
+                    <option value="" selected>All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">User</option>
+                </select>
+                <label>Filter by Role</label>
+            </div>
+        </div>
+        
+        <!-- Users table -->
+        <div class="table-container">
+            <table class="striped responsive-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Created</th>
+                        <th>Last Login</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    {% for user in users %}
+                    <tr data-username="{{ user.username }}" data-role="{{ user.role }}">
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="badge {% if user.role == 'admin' %}blue{% else %}grey{% endif %} white-text">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
+                        <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</td>
+                        <td>
+                            <a href="#edit-user-modal" class="btn-small waves-effect waves-light blue edit-user-btn modal-trigger tooltipped"
+                               data-position="top" data-tooltip="Edit User" 
+                               data-id="{{ user._id }}"
+                               data-username="{{ user.username }}"
+                               data-email="{{ user.email }}"
+                               data-role="{{ user.role }}">
+                                <i class="material-icons">edit</i>
+                            </a>
+                            <a href="#reset-password-modal" class="btn-small waves-effect waves-light amber darken-2 reset-password-btn modal-trigger tooltipped"
+                               data-position="top" data-tooltip="Reset Password"
+                               data-id="{{ user._id }}"
+                               data-username="{{ user.username }}">
+                                <i class="material-icons">vpn_key</i>
+                            </a>
+                            {% if user.username != current_user.username %}
+                            <a href="#delete-user-modal" class="btn-small waves-effect waves-light red delete-user-btn modal-trigger tooltipped"
+                               data-position="top" data-tooltip="Delete User"
+                               data-id="{{ user._id }}"
+                               data-username="{{ user.username }}">
+                                <i class="material-icons">delete</i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div id="add-user-modal" class="modal">
+    <div class="modal-content">
+        <h4>Add New User</h4>
+        <form id="add-user-form" method="POST" action="{{ url_for('admin_bp.add_user') }}">
+            <div class="row">
+                <div class="input-field col s12 m6">
+                    <input id="new-username" name="username" type="text" class="validate" required>
+                    <label for="new-username">Username</label>
+                </div>
+                <div class="input-field col s12 m6">
+                    <input id="new-email" name="email" type="email" class="validate" required>
+                    <label for="new-email">Email</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12 m6">
+                    <input id="new-password" name="password" type="password" class="validate" required>
+                    <label for="new-password">Password</label>
+                </div>
+                <div class="input-field col s12 m6">
+                    <input id="confirm-password" name="confirm_password" type="password" class="validate" required>
+                    <label for="confirm-password">Confirm Password</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <select id="new-role" name="role">
+                        <option value="user" selected>User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <label>User Role</label>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancel</a>
+        <button form="add-user-form" type="submit" class="waves-effect waves-light btn blue">
+            <i class="material-icons left">person_add</i>Add User
+        </button>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div id="edit-user-modal" class="modal">
+    <div class="modal-content">
+        <h4>Edit User</h4>
+        <form id="edit-user-form" method="POST" action="{{ url_for('admin_bp.update_user') }}">
+            <input type="hidden" id="edit-user-id" name="user_id">
+            <div class="row">
+                <div class="input-field col s12 m6">
+                    <input id="edit-username" name="username" type="text" class="validate" required>
+                    <label for="edit-username">Username</label>
+                </div>
+                <div class="input-field col s12 m6">
+                    <input id="edit-email" name="email" type="email" class="validate" required>
+                    <label for="edit-email">Email</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <select id="edit-role" name="role">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <label>User Role</label>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancel</a>
+        <button form="edit-user-form" type="submit" class="waves-effect waves-light btn blue">
+            <i class="material-icons left">save</i>Save Changes
+        </button>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div id="reset-password-modal" class="modal">
+    <div class="modal-content">
+        <h4>Reset Password</h4>
+        <p>Reset password for user: <strong id="reset-username-display"></strong></p>
+        <form id="reset-password-form" method="POST" action="{{ url_for('admin_bp.reset_user_password') }}">
+            <input type="hidden" id="reset-user-id" name="user_id">
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="new-reset-password" name="password" type="password" class="validate" required>
+                    <label for="new-reset-password">New Password</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="confirm-reset-password" name="confirm_password" type="password" class="validate" required>
+                    <label for="confirm-reset-password">Confirm New Password</label>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancel</a>
+        <button form="reset-password-form" type="submit" class="waves-effect waves-light btn amber darken-2">
+            <i class="material-icons left">vpn_key</i>Reset Password
+        </button>
+    </div>
+</div>
+
+<!-- Delete User Modal -->
+<div id="delete-user-modal" class="modal">
+    <div class="modal-content">
+        <h4>Delete User</h4>
+        <p>Are you sure you want to delete user: <strong id="delete-username-display"></strong>?</p>
+        <p class="red-text">This action cannot be undone.</p>
+        <form id="delete-user-form" method="POST" action="{{ url_for('admin_bp.delete_user') }}">
+            <input type="hidden" id="delete-user-id" name="user_id">
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancel</a>
+        <button form="delete-user-form" type="submit" class="waves-effect waves-light btn red">
+            <i class="material-icons left">delete</i>Delete User
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Materialize components
+    var selects = document.querySelectorAll('select');
+    M.FormSelect.init(selects);
+    
+    var modals = document.querySelectorAll('.modal');
+    M.Modal.init(modals);
+    
+    var tooltips = document.querySelectorAll('.tooltipped');
+    M.Tooltip.init(tooltips);
+    
+    // Set up edit user modal data
+    document.querySelectorAll('.edit-user-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var userId = this.getAttribute('data-id');
+            var username = this.getAttribute('data-username');
+            var email = this.getAttribute('data-email');
+            var role = this.getAttribute('data-role');
+            
+            document.getElementById('edit-user-id').value = userId;
+            document.getElementById('edit-username').value = username;
+            document.getElementById('edit-email').value = email;
+            document.getElementById('edit-role').value = role;
+            
+            // Refresh select dropdowns to show current value
+            M.FormSelect.init(document.getElementById('edit-role'));
+            
+            // Activate labels
+            M.updateTextFields();
+        });
+    });
+    
+    // Set up reset password modal data
+    document.querySelectorAll('.reset-password-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var userId = this.getAttribute('data-id');
+            var username = this.getAttribute('data-username');
+            
+            document.getElementById('reset-user-id').value = userId;
+            document.getElementById('reset-username-display').textContent = username;
+        });
+    });
+    
+    // Set up delete user modal data
+    document.querySelectorAll('.delete-user-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var userId = this.getAttribute('data-id');
+            var username = this.getAttribute('data-username');
+            
+            document.getElementById('delete-user-id').value = userId;
+            document.getElementById('delete-username-display').textContent = username;
+        });
+    });
+    
+    // User search functionality
+    document.getElementById('user-search').addEventListener('keyup', function() {
+        var searchTerm = this.value.toLowerCase();
+        var roleFilter = document.getElementById('role-filter').value;
+        
+        document.querySelectorAll('#users-table-body tr').forEach(function(row) {
+            var username = row.getAttribute('data-username').toLowerCase();
+            var role = row.getAttribute('data-role');
+            var roleMatch = roleFilter === '' || role === roleFilter;
+            var searchMatch = username.includes(searchTerm);
+            
+            if (roleMatch && searchMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    // Role filter functionality
+    document.getElementById('role-filter').addEventListener('change', function() {
+        var roleFilter = this.value;
+        var searchTerm = document.getElementById('user-search').value.toLowerCase();
+        
+        document.querySelectorAll('#users-table-body tr').forEach(function(row) {
+            var username = row.getAttribute('data-username').toLowerCase();
+            var role = row.getAttribute('data-role');
+            var roleMatch = roleFilter === '' || role === roleFilter;
+            var searchMatch = username.includes(searchTerm);
+            
+            if (roleMatch && searchMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    // Password confirmation validation
+    document.getElementById('add-user-form').addEventListener('submit', function(e) {
+        var password = document.getElementById('new-password').value;
+        var confirmPassword = document.getElementById('confirm-password').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            M.toast({html: 'Passwords do not match!'});
+        }
+    });
+    
+    document.getElementById('reset-password-form').addEventListener('submit', function(e) {
+        var password = document.getElementById('new-reset-password').value;
+        var confirmPassword = document.getElementById('confirm-reset-password').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            M.toast({html: 'Passwords do not match!'});
+        }
+    });
+});
+</script>
+{% endblock %} 

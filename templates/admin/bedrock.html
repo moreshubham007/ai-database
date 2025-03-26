@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Bedrock Configuration - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col s12">
+            <h4>AWS Bedrock AI Configuration</h4>
+            <div class="card-panel">
+                <p>
+                    AWS Bedrock provides access to high-quality foundation models from leading AI companies. 
+                    This allows you to enhance your application with powerful AI capabilities without managing 
+                    the underlying infrastructure.
+                </p>
+                <div class="divider"></div>
+                <h5>Configuration Guide</h5>
+                <ol>
+                    <li>Create an AWS Account if you don't have one already.</li>
+                    <li>In AWS Console, go to the IAM service and create an IAM user with programmatic access.</li>
+                    <li>Attach the "AmazonBedrockFullAccess" policy to this IAM user.</li>
+                    <li>Note down the Access Key ID and Secret Access Key provided.</li>
+                    <li>Ensure you've enabled the models you want to use in the Bedrock console (Model access).</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col s12">
+            <div class="card-panel blue lighten-4">
+                <i class="material-icons left">info</i>
+                <strong>Using MCP Protocol:</strong> Our system now implements the MCP (Multi-Context Processing) protocol for accurate data extraction. This standardized approach ensures consistent, high-quality data extraction from company websites.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col s12">
+            <div class="card-panel amber lighten-4">
+                <i class="material-icons left">warning</i>
+                <strong>Recommended Models:</strong> For optimal company data extraction, we recommend using <strong>Anthropic Claude Instant</strong> or <strong>Amazon Titan Text Express</strong>. These models provide the most accurate structured data when used with our MCP protocol. Some advanced models may require inference profiles to be set up in your AWS Bedrock console.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col s12">
+            <div class="card-panel light-blue lighten-4">
+                <i class="material-icons left">new_releases</i>
+                <strong>LinkedIn Integration:</strong> The system now attempts to find and use LinkedIn company pages for more accurate data extraction. This provides more reliable information about company names, locations, and industries.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col s12">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title">AWS Bedrock Settings</span>
+                    <form method="POST" id="bedrockForm">
+                        <div class="row">
+                            <div class="input-field col s12 m6">
+                                <input id="aws_access_key" name="aws_access_key" type="password" class="validate" 
+                                       value="{{ bedrock_config.aws_access_key if bedrock_config else '' }}" required>
+                                <label for="aws_access_key" class="{% if bedrock_config and bedrock_config.aws_access_key %}active{% endif %}">
+                                    AWS Access Key ID
+                                </label>
+                            </div>
+                            <div class="input-field col s12 m6">
+                                <input id="aws_secret_key" name="aws_secret_key" type="password" class="validate" 
+                                       value="{{ bedrock_config.aws_secret_key if bedrock_config else '' }}" required>
+                                <label for="aws_secret_key" class="{% if bedrock_config and bedrock_config.aws_secret_key %}active{% endif %}">
+                                    AWS Secret Access Key
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="input-field col s12 m6">
+                                <select id="aws_region" name="aws_region" required>
+                                    {% for region in available_regions %}
+                                    <option value="{{ region.id }}" 
+                                        {% if bedrock_config and bedrock_config.aws_region == region.id %}selected{% endif %}>
+                                        {{ region.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <label>AWS Region</label>
+                                <span class="helper-text">Select the AWS region where Bedrock is available for your account</span>
+                            </div>
+                            
+                            <div class="input-field col s12 m6">
+                                <select id="model_id" name="model_id" required>
+                                    {% for model in available_models %}
+                                    <option value="{{ model.id }}" 
+                                        {% if bedrock_config and bedrock_config.model_id == model.id %}selected{% endif %}>
+                                        {{ model.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <label>Bedrock Model</label>
+                                <span class="helper-text">Select the foundation model to use (must be enabled in your AWS account)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col s12">
+                                <button class="btn waves-effect waves-light" type="submit">
+                                    Save Configuration
+                                    <i class="material-icons right">save</i>
+                                </button>
+                                
+                                <button class="btn waves-effect waves-light blue" type="button" id="testBtn">
+                                    Test Connection
+                                    <i class="material-icons right">check</i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col s12">
+            <div class="card-panel blue lighten-5" id="testResult" style="display: none;">
+                <h5 id="testResultTitle"></h5>
+                <p id="testResultMessage"></p>
+                <div class="card" id="responseCard" style="display: none;">
+                    <div class="card-content">
+                        <span class="card-title">Model Response</span>
+                        <p id="modelResponse"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col s12">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title">Usage in Application</span>
+                    <p>After configuring Bedrock, you can use it in your application code as follows:</p>
+                    <pre><code>
+# Initialize the Bedrock provider
+from llm import LLMConnector
+llm = LLMConnector()
+
+# Generate text with Bedrock
+response = llm.generate_text(
+    prompt="Write a short summary about artificial intelligence.",
+    provider="bedrock",
+    max_tokens=200,
+    temperature=0.7
+)
+
+# Chat with Bedrock
+messages = [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Tell me about AWS Bedrock."}
+]
+chat_response = llm.chat(
+    messages=messages,
+    provider="bedrock"
+)
+                    </code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize select inputs
+    var elems = document.querySelectorAll('select');
+    var instances = M.FormSelect.init(elems);
+    
+    // Test button handler
+    document.getElementById('testBtn').addEventListener('click', function() {
+        // Show loading
+        M.toast({html: 'Testing connection to AWS Bedrock...'});
+        
+        // Send test request
+        fetch('{{ url_for("admin_bp.test_bedrock") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() if csrf_token else "" }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Get the test result card
+            var resultCard = document.getElementById('testResult');
+            var resultTitle = document.getElementById('testResultTitle');
+            var resultMessage = document.getElementById('testResultMessage');
+            var responseCard = document.getElementById('responseCard');
+            var modelResponse = document.getElementById('modelResponse');
+            
+            // Show the result card
+            resultCard.style.display = 'block';
+            
+            if (data.success) {
+                // Success case
+                resultCard.className = 'card-panel green lighten-4';
+                resultTitle.textContent = 'Connection Successful';
+                resultTitle.className = 'green-text text-darken-2';
+                resultMessage.textContent = data.message;
+                
+                // Show the model response
+                responseCard.style.display = 'block';
+                modelResponse.textContent = data.response;
+            } else {
+                // Error case
+                resultCard.className = 'card-panel red lighten-4';
+                resultTitle.textContent = 'Connection Failed';
+                resultTitle.className = 'red-text text-darken-2';
+                resultMessage.textContent = data.message;
+                
+                // Hide the model response
+                responseCard.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            M.toast({html: 'An error occurred while testing the connection'});
+        });
+    });
+});
+</script>
+{% endblock %} 

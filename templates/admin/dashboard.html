@@ -1,0 +1,43 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<h3>Admin Dashboard</h3>
+
+<div class="row">
+    <div class="col s12 m6">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">User Management</span>
+                <p>Manage user accounts, roles, and permissions.</p>
+            </div>
+            <div class="card-action">
+                <a href="{{ url_for('admin_bp.admin_users') }}">Manage Users</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col s12 m6">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Company Management</span>
+                <p>Manage company records and data.</p>
+            </div>
+            <div class="card-action">
+                <a href="{{ url_for('admin_bp.admin_companies') }}">Manage Companies</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col s12 m6">
+        <div class="card blue-grey lighten-4">
+            <div class="card-content">
+                <span class="card-title">AWS Bedrock Configuration</span>
+                <p>Configure AWS Bedrock AI integration for your application.</p>
+            </div>
+            <div class="card-action">
+                <a href="{{ url_for('admin_bp.admin_bedrock') }}" class="blue-text text-darken-2">Configure AWS Bedrock</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

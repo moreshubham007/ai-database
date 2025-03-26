@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Prompts Management - Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <div class="row mb-0">
+                    <div class="col s6">
+                        <h4 class="card-title">AI Prompts Management</h4>
+                        <p class="grey-text">Manage prompts used for AI-assisted data extraction</p>
+                    </div>
+                    <div class="col s6 right-align">
+                        <a href="{{ url_for('admin_add_ai_prompt') }}" class="waves-effect waves-light btn">
+                            <i class="material-icons left">add</i>New Prompt Set
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <form action="{{ url_for('admin_ai_prompts') }}" method="GET">
+                    <div class="row mb-0">
+                        <div class="input-field col s8">
+                            <i class="material-icons prefix">search</i>
+                            <input id="search" type="text" name="search" value="{{ search_query }}">
+                            <label for="search">Search Prompts</label>
+                        </div>
+                        <div class="input-field col s2">
+                            <select name="per_page" id="per_page">
+                                <option value="10" {% if per_page == 10 %}selected{% endif %}>10 per page</option>
+                                <option value="25" {% if per_page == 25 %}selected{% endif %}>25 per page</option>
+                                <option value="50" {% if per_page == 50 %}selected{% endif %}>50 per page</option>
+                                <option value="100" {% if per_page == 100 %}selected{% endif %}>100 per page</option>
+                            </select>
+                            <label>Items per page</label>
+                        </div>
+                        <div class="input-field col s2">
+                            <button class="btn waves-effect waves-light" type="submit">
+                                <i class="material-icons left">search</i>Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Prompts Table -->
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">AI Prompts</span>
+                {% if ai_prompts %}
+                <table class="striped responsive-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Target Field</th>
+                            <th>Prompt Value</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prompt in ai_prompts %}
+                        <tr>
+                            <td>{{ prompt.name }}</td>
+                            <td>
+                                {% if prompt.target_field == 'general' %}
+                                    <span class="chip grey lighten-2">General</span>
+                                {% elif prompt.target_field == 'name' %}
+                                    <span class="chip indigo white-text">Name</span>
+                                {% elif prompt.target_field == 'products' %}
+                                    <span class="chip blue white-text">Products</span>
+                                {% elif prompt.target_field == 'services' %}
+                                    <span class="chip green white-text">Services</span>
+                                {% elif prompt.target_field == 'location' %}
+                                    <span class="chip orange white-text">Location</span>
+                                {% elif prompt.target_field == 'description' %}
+                                    <span class="chip purple white-text">Description</span>
+                                {% elif prompt.target_field == 'industry' %}
+                                    <span class="chip red white-text">Industry</span>
+                                {% elif prompt.target_field == 'founded' %}
+                                    <span class="chip brown white-text">Founded</span>
+                                {% elif prompt.target_field == 'employees' %}
+                                    <span class="chip teal white-text">Employees</span>
+                                {% elif prompt.target_field == 'revenue' %}
+                                    <span class="chip deep-purple white-text">Revenue</span>
+                                {% elif prompt.target_field == 'keyword' %}
+                                    <span class="chip cyan white-text">Keywords</span>
+                                {% else %}
+                                    <span class="chip">{{ prompt.target_field|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ prompt.value|truncate(60) }}</td>
+                            <td>{{ prompt.description|truncate(40) if prompt.description else '-' }}</td>
+                            <td>
+                                <a href="{{ url_for('admin_edit_ai_prompt', prompt_id=prompt._id) }}" class="btn-small waves-effect waves-light blue">
+                                    <i class="material-icons">edit</i>
+                                </a>
+                                <button class="btn-small waves-effect waves-light red modal-trigger" 
+                                      data-target="deletePromptModal" 
+                                      data-id="{{ prompt._id }}" 
+                                      data-name="{{ prompt.name }}">
+                                    <i class="material-icons">delete</i>
+                                </button>
+                                <button class="btn-small waves-effect waves-light green modal-trigger view-prompt-btn"
+                                      data-target="viewPromptModal"
+                                      data-name="{{ prompt.name }}"
+                                      data-value="{{ prompt.value }}"
+                                      data-description="{{ prompt.description }}">
+                                    <i class="material-icons">visibility</i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <!-- Pagination -->
+                <div class="pagination center-align" style="margin-top: 20px;">
+                    <ul class="pagination">
+                        <li class="{{ 'disabled' if current_page == 1 else 'waves-effect' }}">
+                            <a href="{{ url_for('admin_ai_prompts', page=current_page-1, per_page=per_page, search=search_query) if current_page > 1 else '#' }}">
+                                <i class="material-icons">chevron_left</i>
+                            </a>
+                        </li>
+                        
+                        {% for p in range(1, total_pages + 1) %}
+                            {% if p == current_page %}
+                                <li class="active"><a href="#">{{ p }}</a></li>
+                            {% elif p <= 3 or p >= total_pages - 2 or (p >= current_page - 1 and p <= current_page + 1) %}
+                                <li class="waves-effect">
+                                    <a href="{{ url_for('admin_ai_prompts', page=p, per_page=per_page, search=search_query) }}">{{ p }}</a>
+                                </li>
+                            {% elif p == 4 and current_page > 5 or p == total_pages - 3 and current_page < total_pages - 4 %}
+                                <li class="disabled"><a href="#">...</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <li class="{{ 'disabled' if current_page == total_pages else 'waves-effect' }}">
+                            <a href="{{ url_for('admin_ai_prompts', page=current_page+1, per_page=per_page, search=search_query) if current_page < total_pages else '#' }}">
+                                <i class="material-icons">chevron_right</i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% else %}
+                <p>No AI prompts found. <a href="{{ url_for('admin_add_ai_prompt') }}">Add your first prompt</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deletePromptModal" class="modal">
+    <div class="modal-content">
+        <h4>Confirm Deletion</h4>
+        <p>Are you sure you want to delete the prompt "<span id="deletePromptName"></span>"?</p>
+        <p class="red-text">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+        <form id="deletePromptForm" method="POST">
+            <a href="#!" class="modal-close waves-effect waves-grey btn-flat">Cancel</a>
+            <button type="submit" class="waves-effect waves-light btn red">
+                <i class="material-icons left">delete</i>Delete
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- View Prompt Modal - Updated for new structure -->
+<div id="viewPromptModal" class="modal">
+    <div class="modal-content">
+        <h4>Prompt Details</h4>
+        
+        <div class="section">
+            <h5>Name</h5>
+            <div class="card-panel" id="view-name"></div>
+        </div>
+        
+        <div class="section">
+            <h5>Prompt Value</h5>
+            <div class="card-panel" id="view-value"></div>
+        </div>
+        
+        <div class="section" id="description-section">
+            <h5>Description</h5>
+            <div class="card-panel" id="view-description"></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize select inputs
+        var selects = document.querySelectorAll('select');
+        M.FormSelect.init(selects);
+        
+        // Initialize modals
+        var modals = document.querySelectorAll('.modal');
+        M.Modal.init(modals);
+        
+        // Handle delete confirmation modal
+        var deleteButtons = document.querySelectorAll('[data-target="deletePromptModal"]');
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                var promptId = this.getAttribute('data-id');
+                var promptName = this.getAttribute('data-name');
+                
+                document.getElementById('deletePromptName').textContent = promptName;
+                document.getElementById('deletePromptForm').action = "{{ url_for('admin_delete_ai_prompt', prompt_id='') }}" + promptId;
+            });
+        });
+        
+        // Handle view prompt modal
+        var viewButtons = document.querySelectorAll('.view-prompt-btn');
+        viewButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                document.getElementById('view-name').textContent = this.getAttribute('data-name');
+                document.getElementById('view-value').textContent = this.getAttribute('data-value');
+                
+                var description = this.getAttribute('data-description');
+                if (description && description.trim() !== '') {
+                    document.getElementById('view-description').textContent = description;
+                    document.getElementById('description-section').style.display = 'block';
+                } else {
+                    document.getElementById('description-section').style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <div class="row mb-0">
+                    <div class="col s12">
+                        <h4 class="card-title">Edit User</h4>
+                        <p class="grey-text">Editing user: <strong>{{ user.username }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-content">
+                <form method="POST">
+                    <div class="row">
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">person</i>
+                            <input id="username" name="username" type="text" class="validate" value="{{ user.username }}" required>
+                            <label for="username">Username</label>
+                            <span class="helper-text">Choose a unique username</span>
+                        </div>
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">email</i>
+                            <input id="email" name="email" type="email" class="validate" value="{{ user.email }}" required>
+                            <label for="email">Email</label>
+                            <span class="helper-text" data-error="Please enter a valid email">User's email address</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">lock</i>
+                            <input id="password" name="password" type="password" class="validate">
+                            <label for="password">New Password (leave blank to keep current)</label>
+                            <span class="helper-text">Minimum 6 characters, leave empty to keep current password</span>
+                        </div>
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">security</i>
+                            <select id="role" name="role">
+                                <option value="user" {% if user.role == 'user' %}selected{% endif %}>User</option>
+                                <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                            </select>
+                            <label>Role</label>
+                            <span class="helper-text">Admin can manage users and all companies</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 center-align">
+                            <button class="btn waves-effect waves-light" type="submit">
+                                Update User <i class="material-icons right">save</i>
+                            </button>
+                            <a href="{{ url_for('admin_users') }}" class="btn waves-effect waves-light grey lighten-1">
+                                Cancel <i class="material-icons right">cancel</i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize select dropdown
+        var selects = document.querySelectorAll('select');
+        M.FormSelect.init(selects);
+    });
+</script>
+{% endblock %} 

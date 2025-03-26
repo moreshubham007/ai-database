@@ -1,0 +1,23 @@
+<div class="row">
+    <div class="col s12 m6">
+        <div class="card-panel">
+            <h5>Contact Information</h5>
+            <p><strong>Website:</strong> 
+                {% if company.website %}
+                    <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
+                {% else %}
+                    Not specified
+                {% endif %}
+            </p>
+            <p><strong>LinkedIn:</strong> 
+                {% if company.linkedin_url %}
+                    <a href="{{ company.linkedin_url }}" target="_blank">{{ company.linkedin_url }}</a>
+                {% else %}
+                    Not specified
+                {% endif %}
+            </p>
+            <!-- Other contact information -->
+        </div>
+    </div>
+    <!-- Other company details -->
+</div> 

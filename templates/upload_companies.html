@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Companies - Company Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <div class="row mb-0">
+                    <div class="col s12">
+                        <h4 class="card-title">Upload Companies from CSV</h4>
+                        <p class="grey-text">Bulk import companies from a CSV file</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col s12 m7">
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Upload File</span>
+                        <div class="row">
+                            <div class="col s12">
+                                <p>Upload a CSV file with company data. The file should have the following columns:</p>
+                                <div class="collection">
+                                    <div class="collection-item"><b>name</b> - Company name (required)</div>
+                                    <div class="collection-item"><b>website</b> - Company website</div>
+                                    <div class="collection-item"><b>products</b> - Products offered</div>
+                                    <div class="collection-item"><b>services</b> - Services offered</div>
+                                    <div class="collection-item"><b>location</b> - Company location</div>
+                                    <div class="collection-item"><b>keyword</b> - Keywords for search</div>
+                                </div>
+                            </div>
+                        </div>
+                        <form method="POST" enctype="multipart/form-data">
+                            <div class="row">
+                                <div class="col s12">
+                                    <div class="file-field input-field">
+                                        <div class="btn">
+                                            <span><i class="material-icons left">attach_file</i> File</span>
+                                            <input type="file" name="file" accept=".csv" required>
+                                        </div>
+                                        <div class="file-path-wrapper">
+                                            <input class="file-path validate" type="text" placeholder="Upload CSV file">
+                                            <span class="helper-text">Only CSV files are accepted</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12 center-align">
+                                    <button class="btn waves-effect waves-light green lighten-1" type="submit">
+                                        <i class="material-icons left">file_upload</i> Upload
+                                    </button>
+                                    <a href="{{ url_for('dashboard') }}" class="btn waves-effect waves-light grey lighten-1">
+                                        <i class="material-icons left">cancel</i> Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col s12 m5">
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Sample CSV Format</span>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="code-block" style="background-color: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto; font-family: monospace; font-size: 14px;">
+name,website,products,services,location,keyword
+PowerPacksPlus,http://powerpacksplus.com,Batteries,Battery Installation,New York,power
+TechSolutions,http://techsolutions.com,Computers,IT Support,San Francisco,technology
+GreenEnergy,http://greenenergy.com,Solar Panels,Energy Consulting,Austin,renewable
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12 center-align" style="margin-top: 20px;">
+                                <a href="{{ url_for('static', filename='sample_companies.csv') }}" class="btn waves-effect waves-light blue-grey lighten-1" download>
+                                    <i class="material-icons left">download</i> Download Sample
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Tips</span>
+                        <ul class="browser-default">
+                            <li>Make sure your CSV file has a header row with column names</li>
+                            <li>The "name" column is required for each company</li>
+                            <li>You can leave other fields empty if not applicable</li>
+                            <li>For best results, use UTF-8 encoding for your CSV file</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

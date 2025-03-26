@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Company - Company Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <div class="row mb-0">
+                    <div class="col s12">
+                        <h4 class="card-title">Edit Company</h4>
+                        <p class="grey-text">Editing company: <strong>{{ company.name }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-content">
+                <form method="POST">
+                    <div class="row">
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">business</i>
+                            <input id="name" name="name" type="text" class="validate" value="{{ company.name }}" required>
+                            <label for="name">Company Name</label>
+                            <span class="helper-text">Required</span>
+                        </div>
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">language</i>
+                            <input id="website" name="website" type="url" class="validate" value="{{ company.website }}">
+                            <label for="website">Website</label>
+                            <span class="helper-text" data-error="Please enter a valid URL">Company website URL</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">shopping_cart</i>
+                            <textarea id="products" name="products" class="materialize-textarea">{{ company.products }}</textarea>
+                            <label for="products">Products</label>
+                            <span class="helper-text">Products offered by the company</span>
+                        </div>
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">build</i>
+                            <textarea id="services" name="services" class="materialize-textarea">{{ company.services }}</textarea>
+                            <label for="services">Services</label>
+                            <span class="helper-text">Services offered by the company</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">location_on</i>
+                            <input id="location" name="location" type="text" class="validate" value="{{ company.location }}">
+                            <label for="location">Location</label>
+                            <span class="helper-text">Company location or address</span>
+                        </div>
+                        <div class="input-field col s12 m6">
+                            <i class="material-icons prefix">label</i>
+                            <input id="keyword" name="keyword" type="text" class="validate" value="{{ company.keyword }}">
+                            <label for="keyword">Keyword</label>
+                            <span class="helper-text">Keywords for search (comma separated)</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 center-align">
+                            <button class="btn waves-effect waves-light" type="submit">
+                                Update Company <i class="material-icons right">save</i>
+                            </button>
+                            <a href="{{ url_for('dashboard') }}" class="btn waves-effect waves-light grey lighten-1">
+                                Cancel <i class="material-icons right">cancel</i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-resize textareas
+        M.textareaAutoResize($('textarea'));
+    });
+</script>
+{% endblock %} 
